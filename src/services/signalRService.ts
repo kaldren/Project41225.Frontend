@@ -49,4 +49,19 @@ export default class SignalRService {
   public invoke(methodName: string, ...args: any[]): Promise<any> {
     return this.hubConnection.invoke(methodName, ...args);
   }
+
+  /** Subscribe to on‐the‐fly (partial) transcript updates */
+  public onPartialTranscript(handler: (sessionId: string, text: string) => void) {
+    this.hubConnection.on("ReceivePartialTranscript", handler);
+  }
+
+  /** Subscribe to final transcript updates */
+  public onFinalTranscript(handler: (sessionId: string, text: string) => void) {
+    this.hubConnection.on("ReceiveFinalTranscript", handler);
+  }
+
+  /** Unsubscribe from an event name */
+  public off(eventName: string) {
+    this.hubConnection.off(eventName);
+  }
 }
