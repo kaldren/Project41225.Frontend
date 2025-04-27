@@ -10,6 +10,7 @@ export default class SignalRService {
   private constructor() {
     this.hubConnection = new signalR.HubConnectionBuilder()
       .withUrl(`${import.meta.env.VITE_API_BASE_URL}/hubs/audio`)
+      .configureLogging(signalR.LogLevel.Information) // ← add this
       .withAutomaticReconnect()
       .build();
   }

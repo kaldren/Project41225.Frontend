@@ -18,23 +18,27 @@ export default class AudioService {
    * Connect, tell the hub to start a session, then begin pushing audio.
    */
   public async startRecording(): Promise<void> {
-    await this.signalR.connect();
-    // Tell the hub: “I’m ready to stream for this session”
-    await this.signalR.invoke("StartSession", this.sessionId);
+    try {
+      await this.signalR.connect();
+      // Tell the hub: “I’m ready to stream for this session”
+      await this.signalR.invoke("StartSession", this.sessionId);
 
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    this.mediaRecorder = new MediaRecorder(stream, {
-      mimeType: "audio/webm; codecs=opus",
-    });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      this.mediaRecorder = new MediaRecorder(stream, {
+        mimeType: "audio/webm; codecs=opus",
+      });
 
-    this.mediaRecorder.ondataavailable = async (event: BlobEvent) => {
-      if (event.data.size > 0) {
-        const buffer = await event.data.arrayBuffer();
-        // Push each chunk to the hub
-        await this.signalR.invoke("SendAudioChunk", this.sessionId, new Uint8Array(buffer));
-      }
-    };
-    this.mediaRecorder.start(1000); // emit every second
+      this.mediaRecorder.ondataavailable = async (event: BlobEvent) => {
+        if (event.data.size > 0) {
+          const buffer = await event.data.arrayBuffer();
+          // Push each chunk to the hub
+          await this.signalR.invoke("SendAudioChunk", this.sessionId, new Uint8Array(buffer));
+        }
+      };
+      this.mediaRecorder.start(1000); // emit every second
+    } catch (error) {
+      console.error("Start Recording error: ", error);
+    }
   }
 
   /**

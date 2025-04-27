@@ -1,12 +1,23 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
-import { CircularProgress, Card, CardContent, Typography, List, ListItem, ListItemText } from "@mui/material";
+import { useNavigate, useParams } from "react-router";
+import {
+  CircularProgress,
+  Card,
+  CardContent,
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  Button,
+  CardActions,
+} from "@mui/material";
 import { getFeedback } from "@/services/interviewService";
 import { Feedback } from "@/models/Feedback";
 
 const Page: React.FunctionComponent = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
   const [fb, setFb] = useState<Feedback | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (sessionId) {
@@ -17,6 +28,8 @@ const Page: React.FunctionComponent = () => {
   if (!fb) {
     return <CircularProgress sx={{ display: "block", mx: "auto", mt: 6 }} />;
   }
+
+  const goHome = () => navigate("/");
 
   return (
     <Card sx={{ maxWidth: 500, mx: "auto", mt: 6 }}>
@@ -35,6 +48,11 @@ const Page: React.FunctionComponent = () => {
           ))}
         </List>
       </CardContent>
+      <CardActions>
+        <Button fullWidth variant="outlined" onClick={goHome}>
+          Home
+        </Button>
+      </CardActions>
     </Card>
   );
 };

@@ -11,7 +11,7 @@ function App() {
       <Routes>
         <Route element={<MainLayout />}>
           <Route path="/" index element={<HomePage />} />
-          <Route path="/interview" element={<InterviewPage />} />
+          <Route path="/interview/:sessionId" element={<InterviewPage />} />
           <Route path="/feedback/:sessionId" element={<FeedbackPage />} />
         </Route>
       </Routes>

@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "react-router";
-import { Button, Box, Typography } from "@mui/material";
+import { Button, Box, Typography, Stack } from "@mui/material";
 import AudioService from "@/services/audioService";
 import SignalRService from "@/services/signalRService";
 import { useState, useMemo, useEffect } from "react";
@@ -45,6 +45,8 @@ const Page: React.FunctionComponent = () => {
     navigate(`/feedback/${sessionId}`);
   };
 
+  const goHome = () => navigate("/");
+
   return (
     <Box sx={{ maxWidth: 600, mx: "auto", mt: 4 }}>
       <Typography variant="h5" mb={2}>
@@ -72,17 +74,21 @@ const Page: React.FunctionComponent = () => {
           ))
         )}
       </Box>
-
-      {/* Start/Stop button */}
-      {recording ? (
-        <Button fullWidth variant="contained" onClick={finishInterview}>
-          Stop &amp; Get Feedback
+      <Stack gap={1}>
+        {/* Start/Stop button */}
+        {recording ? (
+          <Button fullWidth variant="contained" onClick={finishInterview}>
+            Stop &amp; Get Feedback
+          </Button>
+        ) : (
+          <Button fullWidth variant="contained" onClick={startInterview}>
+            Start Interview
+          </Button>
+        )}
+        <Button fullWidth variant="outlined" onClick={goHome}>
+          Home
         </Button>
-      ) : (
-        <Button fullWidth variant="contained" onClick={startInterview}>
-          Start Interview
-        </Button>
-      )}
+      </Stack>
     </Box>
   );
 };
