@@ -1,4 +1,4 @@
-import { QuestionScore } from "./questionScore";
+import { QuestionScore } from "./QuestionScore";
 
 export interface Feedback {
   clarity: number;

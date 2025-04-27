@@ -12,4 +12,14 @@ export default defineConfig({
       "@": resolve(srcFolder),
     },
   },
+  build: {
+    rollupOptions: {
+      onwarn(warning, defaultHandler) {
+        // Ignore the pure-annotation warning from @microsoft/signalr
+        if (warning.message.includes("/*#__PURE__*/")) return;
+        // Let other warnings through
+        defaultHandler(warning);
+      },
+    },
+  },
 });

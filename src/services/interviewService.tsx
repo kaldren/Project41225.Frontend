@@ -1,4 +1,4 @@
-import { Feedback } from "@/models/feedback";
+import { Feedback } from "@/models/Feedback";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 

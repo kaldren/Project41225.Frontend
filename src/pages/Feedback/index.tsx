@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { CircularProgress, Card, CardContent, Typography, List, ListItem, ListItemText } from "@mui/material";
 import { getFeedback } from "@/services/interviewService";
-import { Feedback } from "@/models/feedback";
+import { Feedback } from "@/models/Feedback";
 
 const Page: React.FunctionComponent = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
