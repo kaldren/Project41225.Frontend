@@ -13,6 +13,7 @@ export default defineConfig({
     },
   },
   build: {
+    chunkSizeWarningLimit: 1000, // Adjust the limit in KB (1000 KB = 1 MB)
     rollupOptions: {
       onwarn(warning, defaultHandler) {
         // Ignore the pure-annotation warning from @microsoft/signalr
