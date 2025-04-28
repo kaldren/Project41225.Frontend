@@ -1,4 +1,5 @@
 import * as signalR from "@microsoft/signalr";
+import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
 
 /**
  * Singleton SignalR service for managing hub connection.
@@ -10,7 +11,8 @@ export default class SignalRService {
   private constructor() {
     this.hubConnection = new signalR.HubConnectionBuilder()
       .withUrl(`${import.meta.env.VITE_API_BASE_URL}/hubs/audio`)
-      .configureLogging(signalR.LogLevel.Information) // ← add this
+      .withHubProtocol(new MessagePackHubProtocol())
+      .configureLogging(signalR.LogLevel.Information)
       .withAutomaticReconnect()
       .build();
   }
