@@ -1,6 +1,7 @@
 import SignalRService from "./signalRService";
 import processorUrl from "@/processors/PcmEncoderProcessor.ts?url";
 import { PcmEncoderNode } from "@/processors/PcmEncoderNode";
+import { HubConnectionState } from "@microsoft/signalr";
 
 export default class AudioService {
   private ctx!: AudioContext;
@@ -23,9 +24,12 @@ export default class AudioService {
 
     this.source.connect(this.encoderNode).connect(mute).connect(this.ctx.destination);
 
-    // this.encoderNode.port.onmessage = (e: MessageEvent<ArrayBuffer>) => {
-    //   this.signalR.sendAudioChunk(this.sessionId, new Uint8Array(e.data));
-    // };
+    this.encoderNode.port.onmessage = (e: MessageEvent<ArrayBuffer>) => {
+      const conn = SignalRService.getInstance().connection;
+      if (conn.state === HubConnectionState.Connected) {
+        this.signalR.sendAudioChunk(this.sessionId, new Uint8Array(e.data));
+      }
+    };
 
     await this.signalR.startSession(this.sessionId);
   }
@@ -34,6 +38,6 @@ export default class AudioService {
     this.source.disconnect();
     this.encoderNode.disconnect();
     await this.ctx.close();
-    await this.signalR.stopSession();
+    await this.signalR.stopSession(this.sessionId);
   }
 }

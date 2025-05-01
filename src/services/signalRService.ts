@@ -8,7 +8,7 @@ type EventHandler = (...args: any[]) => void;
  */
 export default class SignalRService {
   private static instance: SignalRService;
-  private connection: signalR.HubConnection;
+  public readonly connection: signalR.HubConnection;
 
   private constructor() {
     this.connection = new signalR.HubConnectionBuilder()
@@ -64,8 +64,8 @@ export default class SignalRService {
   public sendAudioChunk(sessionId: string, chunk: ArrayBuffer) {
     return this.invoke("SendAudioChunk", sessionId, chunk);
   }
-  public stopSession() {
-    return this.invoke("StopSession");
+  public stopSession(sessionId: string) {
+    return this.invoke("StopSession", sessionId);
   }
 
   public onFinalTranscript(handler: (sessionId: string, text: string) => void) {
