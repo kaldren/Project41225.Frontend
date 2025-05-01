@@ -1,4 +1,4 @@
-import { createSession } from "@/services/interviewService";
+import { createSession } from "@/services/trainingSessionService";
 import { Box, Typography, Button, CircularProgress } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router";
@@ -11,7 +11,7 @@ const Home: React.FunctionComponent = () => {
     submitting(true);
     try {
       const sessionId = await createSession();
-      navigate(`/interview/${sessionId}`);
+      navigate(`/session/${sessionId}`);
     } finally {
       submitting(false);
     }

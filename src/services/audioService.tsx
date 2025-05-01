@@ -1,56 +1,39 @@
-// src/services/audioService.ts
 import SignalRService from "./signalRService";
+import processorUrl from "@/processors/PcmEncoderProcessor.ts?url";
+import { PcmEncoderNode } from "@/processors/PcmEncoderNode";
 
-/**
- * Audio service exposing start/stop recording & streaming via SignalR.
- * Matches the new Hub methods: StartSession, SendAudioChunk, StopSession.
- */
 export default class AudioService {
+  private ctx!: AudioContext;
+  private encoderNode!: PcmEncoderNode;
+  private source!: MediaStreamAudioSourceNode;
   private signalR = SignalRService.getInstance();
-  private mediaRecorder: MediaRecorder | null = null;
-  private sessionId: string;
 
-  constructor(sessionId: string) {
-    this.sessionId = sessionId;
+  constructor(private sessionId: string) {}
+
+  async startRecording() {
+    this.ctx = new AudioContext({ sampleRate: 16000 });
+    await this.ctx.audioWorklet.addModule(processorUrl);
+
+    this.encoderNode = new PcmEncoderNode(this.ctx);
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    this.source = this.ctx.createMediaStreamSource(stream);
+
+    const mute = this.ctx.createGain();
+    mute.gain.value = 0;
+
+    this.source.connect(this.encoderNode).connect(mute).connect(this.ctx.destination);
+
+    // this.encoderNode.port.onmessage = (e: MessageEvent<ArrayBuffer>) => {
+    //   this.signalR.sendAudioChunk(this.sessionId, new Uint8Array(e.data));
+    // };
+
+    await this.signalR.startSession(this.sessionId);
   }
 
-  /**
-   * Connect, tell the hub to start a session, then begin pushing audio.
-   */
-  public async startRecording(): Promise<void> {
-    try {
-      await this.signalR.connect();
-      // Tell the hub: “I’m ready to stream for this session”
-      await this.signalR.invoke("StartSession", this.sessionId);
-
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      this.mediaRecorder = new MediaRecorder(stream, {
-        mimeType: "audio/webm; codecs=opus",
-      });
-
-      this.mediaRecorder.ondataavailable = async (event: BlobEvent) => {
-        if (event.data.size > 0) {
-          const buffer = await event.data.arrayBuffer();
-          // Push each chunk to the hub
-          await this.signalR.invoke("SendAudioChunk", this.sessionId, new Uint8Array(buffer));
-        }
-      };
-      this.mediaRecorder.start(1000); // emit every second
-    } catch (error) {
-      console.error("Start Recording error: ", error);
-    }
-  }
-
-  /**
-   * Stop pushing audio and notify the hub you're done.
-   */
-  public async stopRecording(): Promise<void> {
-    if (this.mediaRecorder && this.mediaRecorder.state !== "inactive") {
-      this.mediaRecorder.stop();
-    }
-    // Tell the hub to finish the session
-    await this.signalR.invoke("StopSession");
-    // Clean up the connection
-    await this.signalR.disconnect();
+  async stopRecording() {
+    this.source.disconnect();
+    this.encoderNode.disconnect();
+    await this.ctx.close();
+    await this.signalR.stopSession();
   }
 }

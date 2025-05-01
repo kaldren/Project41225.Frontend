@@ -1,0 +1,41 @@
+import SignalRService from "./signalRService";
+
+export type TranscriptHandler = (text: string) => void;
+export type ChatPartHandler = (delta: string) => void;
+export type ChatCompleteHandler = () => void;
+
+export interface ChatSessionHandlers {
+  onFinalTranscript: TranscriptHandler;
+  onChatResponsePart: ChatPartHandler;
+  onChatResponseComplete: ChatCompleteHandler;
+}
+
+class ChatSessionService {
+  private signalR = SignalRService.getInstance();
+
+  subscribe(sessionId: string, handlers: ChatSessionHandlers): () => void {
+    const { onFinalTranscript, onChatResponsePart, onChatResponseComplete } = handlers;
+
+    const finalCb = (sid: string, text: string) => {
+      if (sid === sessionId) onFinalTranscript(text);
+    };
+    const partCb = (sid: string, delta: string) => {
+      if (sid === sessionId) onChatResponsePart(delta);
+    };
+    const doneCb = (sid: string) => {
+      if (sid === sessionId) onChatResponseComplete();
+    };
+
+    this.signalR.onFinalTranscript(finalCb);
+    this.signalR.onChatResponsePart(partCb);
+    this.signalR.onChatResponseComplete(doneCb);
+
+    return () => {
+      this.signalR.off("ReceiveFinalTranscript", finalCb);
+      this.signalR.off("ReceiveChatResponsePart", partCb);
+      this.signalR.off("ReceiveChatResponseComplete", doneCb);
+    };
+  }
+}
+
+export default new ChatSessionService();

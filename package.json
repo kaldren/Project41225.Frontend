@@ -25,7 +25,9 @@
     "moment-timezone": "^0.5.48",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-router": "^7.5.2"
+    "react-router": "^7.5.2",
+    "recorder-audio-worklet": "^6.0.45",
+    "recorder-audio-worklet-processor": "^5.0.33"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
