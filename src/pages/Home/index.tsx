@@ -19,7 +19,7 @@ const Home: React.FunctionComponent = () => {
   return (
     <Box sx={{ textAlign: "center", mt: 8 }}>
       <Typography variant="h4" gutterBottom>
-        Welcome to AI Interview Coach
+        Welcome to AI Learning Tool
       </Typography>
       <Button
         variant="contained"
