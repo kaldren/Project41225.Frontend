@@ -20,13 +20,16 @@ export default function Interview() {
 
     const unsubscribe = ChatSessionService.subscribe(sessionId, {
       onFinalTranscript: (text) => {
+        console.log("onFinalTranscript", text);
         setMessages((ms) => [...ms, { sender: "user", text }]);
         setCurrentAssistant("");
       },
       onChatResponsePart: (delta) => {
+        console.log("onChatResponsePart", delta);
         setCurrentAssistant((c) => c + delta);
       },
       onChatResponseComplete: () => {
+        console.log("onChatResponseComplete");
         setMessages((ms) => [...ms, { sender: "assistant", text: currentAssistant }]);
         setCurrentAssistant("");
       },
