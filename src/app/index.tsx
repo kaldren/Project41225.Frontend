@@ -2,7 +2,7 @@ import MainLayout from "@/shared/layout/MainLayout";
 import "./index.css";
 import { Routes, Route, BrowserRouter } from "react-router";
 import HomePage from "@/pages/Home";
-import InterviewPage from "@/pages/Interview";
+import TrainingSessionPage from "@/pages/TrainingSession";
 import FeedbackPage from "@/pages/Feedback";
 
 function App() {
@@ -11,7 +11,7 @@ function App() {
       <Routes>
         <Route element={<MainLayout />}>
           <Route path="/" index element={<HomePage />} />
-          <Route path="/interview/:sessionId" element={<InterviewPage />} />
+          <Route path="/session/:sessionId" element={<TrainingSessionPage />} />
           <Route path="/feedback/:sessionId" element={<FeedbackPage />} />
         </Route>
       </Routes>

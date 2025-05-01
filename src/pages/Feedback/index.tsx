@@ -11,7 +11,7 @@ import {
   Button,
   CardActions,
 } from "@mui/material";
-import { getFeedback } from "@/services/interviewService";
+import { getFeedback } from "@/services/trainingSessionService";
 import { Feedback } from "@/models/Feedback";
 
 const Page: React.FunctionComponent = () => {
