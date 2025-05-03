@@ -8,30 +8,10 @@ type EventHandler = (...args: any[]) => void;
  */
 export default class SignalRService {
   private static instance: SignalRService;
-  public readonly connection: signalR.HubConnection;
+  private connection: signalR.HubConnection;
 
   private constructor() {
-    this.connection = new signalR.HubConnectionBuilder()
-      .withUrl(`${import.meta.env.VITE_API_BASE_URL}/hubs/audio`)
-      .withHubProtocol(new MessagePackHubProtocol())
-      .configureLogging(signalR.LogLevel.Information)
-      .withAutomaticReconnect()
-      .build();
-
-    this.connection.onreconnected((id) => console.info("SignalR reconnected:", id));
-    this.connection.onclose(async () => {
-      console.warn("SignalR closed; attempting restart...");
-      try {
-        await this.connection.start();
-      } catch (err) {
-        console.error("Failed to restart SignalR:", err);
-      }
-    });
-
-    this.connection
-      .start()
-      .then(() => console.info("SignalR connected"))
-      .catch((err) => console.error("SignalR start failed:", err));
+    this.connection = this.ensureConnection();
   }
 
   public static getInstance(): SignalRService {
@@ -76,5 +56,38 @@ export default class SignalRService {
   }
   public onChatResponseComplete(handler: (sessionId: string) => void) {
     this.on("ReceiveChatResponseComplete", handler);
+  }
+
+  public getConnection(): signalR.HubConnection {
+    return this.connection;
+  }
+
+  public ensureConnection(): signalR.HubConnection {
+    if (this.connection?.state === signalR.HubConnectionState.Connected) {
+      return this.connection;
+    }
+
+    this.connection = new signalR.HubConnectionBuilder()
+      .withUrl(`${import.meta.env.VITE_API_BASE_URL}/hubs/audio`)
+      .withHubProtocol(new MessagePackHubProtocol())
+      .configureLogging(signalR.LogLevel.Information)
+      .withAutomaticReconnect()
+      .build();
+
+    this.connection.onreconnected((id) => console.info("SignalR reconnected:", id));
+    this.connection.onclose(async () => {
+      console.warn("SignalR closed; attempting restart...");
+      try {
+        await this.connection.start();
+      } catch (err) {
+        console.error("Failed to restart SignalR:", err);
+      }
+    });
+
+    this.connection
+      .start()
+      .then(() => console.info("SignalR connected"))
+      .catch((err) => console.error("SignalR start failed:", err));
+    return this.connection;
   }
 }

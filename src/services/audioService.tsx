@@ -1,7 +1,6 @@
 import SignalRService from "./signalRService";
 import processorUrl from "@/processors/PcmEncoderProcessor.ts?url";
 import { PcmEncoderNode } from "@/processors/PcmEncoderNode";
-import { HubConnectionState } from "@microsoft/signalr";
 
 export default class AudioService {
   private ctx!: AudioContext;
@@ -9,7 +8,10 @@ export default class AudioService {
   private source!: MediaStreamAudioSourceNode;
   private signalR = SignalRService.getInstance();
 
-  constructor(private sessionId: string) {}
+  constructor(
+    private sessionId: string,
+    private onError: (err: any) => void,
+  ) {}
 
   async startRecording() {
     this.ctx = new AudioContext({ sampleRate: 16000 });
@@ -23,12 +25,13 @@ export default class AudioService {
     mute.gain.value = 0;
 
     this.source.connect(this.encoderNode).connect(mute).connect(this.ctx.destination);
+    SignalRService.getInstance().ensureConnection();
 
     this.encoderNode.port.onmessage = (e: MessageEvent<ArrayBuffer>) => {
-      const conn = SignalRService.getInstance().connection;
-      if (conn.state === HubConnectionState.Connected) {
-        this.signalR.sendAudioChunk(this.sessionId, new Uint8Array(e.data));
-      }
+      this.signalR.sendAudioChunk(this.sessionId, new Uint8Array(e.data)).catch((err) => {
+        // deliver the error back to the UI
+        this.onError(err);
+      });
     };
 
     await this.signalR.startSession(this.sessionId);
