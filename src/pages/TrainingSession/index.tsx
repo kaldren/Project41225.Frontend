@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "react-router";
-import { Box, Button, Typography, Stack, Paper } from "@mui/material";
+import { Box, Button, Typography, Stack, Paper, Alert } from "@mui/material";
 import ChatSessionService from "@/services/chatSessionService";
 import AudioService from "@/services/audioService";
 import { useEffect, useMemo, useState } from "react";
@@ -12,8 +12,17 @@ export default function Interview() {
   const [recording, setRecording] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentAssistant, setCurrentAssistant] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  const audioService = useMemo(() => new AudioService(sessionId), [sessionId]);
+  const audioService = useMemo(
+    () =>
+      new AudioService(sessionId, (err) => {
+        console.error("AudioService error", err);
+        setError(err?.message ?? "Unknown error");
+        setRecording(false);
+      }),
+    [sessionId],
+  );
 
   useEffect(() => {
     if (!sessionId) return;
@@ -39,8 +48,13 @@ export default function Interview() {
   }, [sessionId, currentAssistant]);
 
   const start = async () => {
-    setRecording(true);
-    await audioService.startRecording();
+    setError(null);
+    try {
+      await audioService.startRecording();
+      setRecording(true);
+    } catch (err: any) {
+      setError(err.message || "Failed to start recording");
+    }
   };
   const stop = async () => {
     await audioService.stopRecording();
@@ -51,18 +65,19 @@ export default function Interview() {
   return (
     <Box sx={{ maxWidth: 600, mx: "auto", mt: 4 }}>
       <Typography variant="h5" mb={2}>
-        Training Session
+        Mock Interview
       </Typography>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}.&nbsp;
+          <Button onClick={() => navigate("/")}>Start a new session</Button>
+        </Alert>
+      )}
 
       <Paper elevation={2} sx={{ maxHeight: 300, overflowY: "auto", p: 2, mb: 2 }}>
         {messages.map((m, i) => (
-          <Box
-            key={i}
-            sx={{
-              textAlign: m.sender === "user" ? "right" : "left",
-              mb: 1,
-            }}
-          >
+          <Box key={i} sx={{ textAlign: m.sender === "user" ? "right" : "left", mb: 1 }}>
             <Typography
               component="span"
               sx={{
@@ -78,21 +93,17 @@ export default function Interview() {
             </Typography>
           </Box>
         ))}
-        {currentAssistant && (
-          <Typography component="span" variant="body2">
-            {currentAssistant}▌
-          </Typography>
-        )}
+        {currentAssistant && <Typography variant="body2">{currentAssistant}▌</Typography>}
       </Paper>
 
-      <Stack gap={1}>
+      <Stack spacing={1}>
         {recording ? (
           <Button variant="contained" onClick={stop}>
             Stop &amp; Get Feedback
           </Button>
         ) : (
           <Button variant="contained" onClick={start}>
-            Start Training
+            Start Interview
           </Button>
         )}
         <Button variant="outlined" onClick={() => navigate("/")}>
