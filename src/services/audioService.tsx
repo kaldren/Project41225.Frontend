@@ -14,6 +14,8 @@ export default class AudioService {
   ) {}
 
   async startRecording() {
+    this.ensureAudioStreamConnection();
+
     this.ctx = new AudioContext({ sampleRate: 16000 });
     await this.ctx.audioWorklet.addModule(processorUrl);
 
@@ -25,7 +27,6 @@ export default class AudioService {
     mute.gain.value = 0;
 
     this.source.connect(this.encoderNode).connect(mute).connect(this.ctx.destination);
-    SignalRService.getInstance().ensureConnection();
 
     this.encoderNode.port.onmessage = (e: MessageEvent<ArrayBuffer>) => {
       this.signalR.sendAudioChunk(this.sessionId, new Uint8Array(e.data)).catch((err) => {
@@ -42,5 +43,9 @@ export default class AudioService {
     this.encoderNode.disconnect();
     await this.ctx.close();
     await this.signalR.stopSession(this.sessionId);
+  }
+
+  async ensureAudioStreamConnection() {
+    SignalRService.getInstance().ensureConnection();
   }
 }

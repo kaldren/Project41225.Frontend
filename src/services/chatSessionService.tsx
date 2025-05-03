@@ -23,17 +23,19 @@ class ChatSessionService {
       if (sid === sessionId) onChatResponsePart(delta);
     };
     const doneCb = (sid: string) => {
-      if (sid === sessionId) onChatResponseComplete();
+      if (sid === sessionId && onChatResponseComplete) onChatResponseComplete();
     };
 
     this.signalR.onFinalTranscript(finalCb);
+    this.signalR.onPartialTranscript(partCb);
+    this.signalR.onChatResponseComplete(doneCb);
     this.signalR.onChatResponsePart(partCb);
     this.signalR.onChatResponseComplete(doneCb);
 
     return () => {
-      this.signalR.off("ReceiveFinalTranscript", finalCb);
-      this.signalR.off("ReceiveChatResponsePart", partCb);
-      this.signalR.off("ReceiveChatResponseComplete", doneCb);
+      this.signalR.offFinalTranscript(finalCb);
+      this.signalR.offPartialTranscript(partCb);
+      this.signalR.offChatResponseComplete(doneCb);
     };
   }
 }
