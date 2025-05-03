@@ -48,14 +48,44 @@ export default class SignalRService {
     return this.invoke("StopSession", sessionId);
   }
 
+  // transcript events
+  public onPartialTranscript(handler: (sessionId: string, text: string) => void) {
+    this.connection.on("ReceivePartialTranscript", handler);
+  }
+  public offPartialTranscript(handler?: (...args: any[]) => void) {
+    if (!handler) {
+      this.connection.off("ReceivePartialTranscript");
+    } else {
+      this.connection.off("ReceivePartialTranscript", handler);
+    }
+  }
+
   public onFinalTranscript(handler: (sessionId: string, text: string) => void) {
     this.on("ReceiveFinalTranscript", handler);
   }
+
+  public offFinalTranscript(handler?: (...args: any[]) => void) {
+    if (!handler) {
+      this.connection.off("ReceiveFinalTranscript");
+    } else {
+      this.connection.off("ReceiveFinalTranscript", handler);
+    }
+  }
+
   public onChatResponsePart(handler: (sessionId: string, delta: string) => void) {
     this.on("ReceiveChatResponsePart", handler);
   }
+
   public onChatResponseComplete(handler: (sessionId: string) => void) {
     this.on("ReceiveChatResponseComplete", handler);
+  }
+
+  public offChatResponseComplete(handler?: (...args: any[]) => void) {
+    if (!handler) {
+      this.connection.off("ReceiveChatResponseComplete");
+    } else {
+      this.connection.off("ReceiveChatResponseComplete", handler);
+    }
   }
 
   public getConnection(): signalR.HubConnection {

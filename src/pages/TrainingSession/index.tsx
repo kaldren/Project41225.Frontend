@@ -71,7 +71,14 @@ export default function Interview() {
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}.&nbsp;
-          <Button onClick={() => navigate("/")}>Start a new session</Button>
+          <Button
+            onClick={() => {
+              audioService.ensureAudioStreamConnection();
+              navigate("/");
+            }}
+          >
+            Start a new session
+          </Button>
         </Alert>
       )}
 
